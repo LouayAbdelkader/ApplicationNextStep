@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: user-service
-        image: mohamedlouay/user-service:latest  # <-- Remplace par ton image Docker
+        image: mohamedlouay/user-service-flask:latest  # <-- Remplace par ton image Docker
         ports:
         - containerPort: 5000
         resources:

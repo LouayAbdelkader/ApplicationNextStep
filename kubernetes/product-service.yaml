@@ -45,7 +45,7 @@ spec:
     spec:
       containers:
         - name: product-service
-          image: mohamedlouay/product-service:latest
+          image: mohamedlouay/product-service-flask:latest
           ports:
             - containerPort: 5001
           resources:
