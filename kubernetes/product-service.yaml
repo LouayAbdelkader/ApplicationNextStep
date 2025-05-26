@@ -18,7 +18,7 @@ metadata:
   namespace: dev
 type: Opaque
 stringData:
-  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/product-db"
+  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30007/product-db"
   SECRET_KEY: "devops2024!@#"
 
 ---
