@@ -1,49 +1,38 @@
-# ==================================
-# Stage 1: Installation & Build 🏗️
-# ==================================
+*# Étape 1 : build de l’application
 FROM node:20-alpine AS builder
 
-# Définir l'environnement
-ENV NODE_ENV=production
-
 # Définir le répertoire de travail
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copier uniquement les fichiers nécessaires pour éviter un cache inutile
 COPY package.json package-lock.json* ./
 
-# Installer toutes les dépendances (y compris devDependencies pour le build)
+# Installer les dépendances de production
 RUN npm install
 
-# Copier le reste du code source
+# Copier le reste de l'application
 COPY . .
 
-# Construire l'application Next.js
-# (Assurez-vous que `output: 'standalone',` est dans next.config.mjs)
+# Build de l'application Next.js
 RUN npm run build
 
-# ==================================
-# Stage 2: Production 🚀
-# ==================================
-FROM node:20-alpine
+# Étape 2 : image de production avec Next.js
+FROM node:20-alpine AS runner
 
-# Définir l'environnement
+# Définir NODE_ENV en production
 ENV NODE_ENV=production
 
-# Définir le répertoire de travail
+# Créer et utiliser le dossier d'application
 WORKDIR /app
 
-# Copier les fichiers de sortie 'standalone' depuis le stage précédent
-COPY --from=builder /app/.next/standalone ./
-
-# Copier les fichiers statiques (/_next/static/*)
-COPY --from=builder /app/.next/static ./.next/static
-
-# Copier les fichiers publics (/public/*)
+# Copier uniquement les fichiers nécessaires du build
 COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next ./.next
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/package.json ./package.json
 
-# Exposer le port sur lequel Next.js écoute (par défaut 3000)
+# Exposer le port utilisé par Next.js
 EXPOSE 3000
 
-# Commande pour démarrer le serveur Next.js en mode standalone
-CMD ["node", "server.js"]
+# Démarrer l'application
+CMD ["npm", "start"]
