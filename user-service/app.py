@@ -17,7 +17,7 @@ app.config['MONGO_URI'] = mongo_uri
 app.config['SECRET_KEY'] = secret_key
 
 # CORS configuré pour le frontend exposé
-CORS(app, resources={r"/*": {"origins": "http://10.9.21.20:30080"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "http://10.9.21.20:30090"}}, supports_credentials=True)
 
 mongo = PyMongo(app)
 users_collection = mongo.db.users
