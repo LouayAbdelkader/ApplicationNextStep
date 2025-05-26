@@ -1,0 +1,68 @@
+# ==================================
+# Namespace (si non existant)
+# ==================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+
+# ==================================
+# Deployment 🚀
+# ==================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-nextjs        # Nom du déploiement
+  namespace: dev              # Espace de noms cible
+  labels:
+    app: frontend-nextjs      # Label pour lier au Service
+spec:
+  replicas: 2                 # Nombre de pods souhaités
+  selector:
+    matchLabels:
+      app: frontend-nextjs      # Doit correspondre aux labels du template
+  template:
+    metadata:
+      labels:
+        app: frontend-nextjs      # Label appliqué aux pods
+    spec:
+      containers:
+      - name: frontend-nextjs
+        # ⚠️ IMPORTANT: Remplacez par le nom de VOTRE image Docker !
+        image: mohamedlouay/frontend-nextjs:latest 
+        ports:
+        - containerPort: 3000     # Port exposé par le Dockerfile
+        resources:
+          requests:             # Ressources minimales demandées
+            memory: "128Mi"     # 128 Mebibytes de RAM
+            cpu: "100m"         # 0.1 Cœur de CPU (100 millicores)
+          limits:               # Ressources maximales autorisées
+            memory: "512Mi"     # 512 Mebibytes de RAM
+            cpu: "500m"         # 0.5 Cœur de CPU (500 millicores)
+        env:
+          - name: PORT
+            value: "3000"       # Informer Next.js du port (bonne pratique)
+
+---
+
+# ==================================
+# Service (NodePort) 🌐
+# ==================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-nextjs-svc     # Nom du Service
+  namespace: dev              # Espace de noms cible
+spec:
+  type: NodePort                # Type de Service: expose sur un port de chaque nœud
+  selector:
+    app: frontend-nextjs      # Sélectionne les pods avec ce label (ceux du Deployment)
+  ports:
+    - protocol: TCP
+      port: 80                  # Port accessible à l'intérieur du cluster
+      targetPort: 3000          # Port sur lequel les pods écoutent (ContainerPort)
+      nodePort: 30090         # Optionnel: Kubernetes en assignera un aléatoirement 
+                                # (entre 30000-32767) si vous ne le spécifiez pas.
+                                # Laisser K8s choisir est souvent plus simple.

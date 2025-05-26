@@ -1,0 +1,67 @@
+# ==================================
+# Namespace (si non existant)
+# ==================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: dev
+
+---
+
+# ==================================
+# Deployment 🚀
+# ==================================
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: product-service           # Nom du déploiement
+  namespace: dev                  # Espace de noms cible
+  labels:
+    app: product-service          # Label utilisé pour le service et la sélection
+spec:
+  replicas: 2                    # Nombre de pods souhaités
+  selector:
+    matchLabels:
+      app: product-service       # Doit correspondre aux labels des pods
+  template:
+    metadata:
+      labels:
+        app: product-service     # Label appliqué aux pods
+    spec:
+      containers:
+      - name: product-service
+        image: mohamedlouay/product-service:latest  # Image Docker à utiliser
+        ports:
+        - containerPort: 5001    # Port exposé par le conteneur
+        resources:
+          requests:              # Ressources minimales demandées
+            memory: "128Mi"      # 128 MiB RAM
+            cpu: "100m"          # 0.1 CPU (100 millicores)
+          limits:                # Ressources maximales autorisées
+            memory: "512Mi"      # 512 MiB RAM
+            cpu: "500m"          # 0.5 CPU (500 millicores)
+        env:
+          - name: MONGO_URI      # URI de connexion MongoDB (base product-db)
+            value: "mongodb://louaymoncef:isetch@10.9.21.20:30017/product-db"
+          - name: SECRET_KEY     # Clé secrète pour JWT ou autre usage
+            value: "devops2024!@#"
+
+---
+
+# ==================================
+# Service (NodePort) 🌐
+# ==================================
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service-svc      # Nom du service exposé
+  namespace: dev                 # Espace de noms cible
+spec:
+  type: NodePort                 # Expose le service sur un port de chaque nœud K8s
+  selector:
+    app: product-service         # Sélectionne les pods du product-service
+  ports:
+    - protocol: TCP
+      port: 80                   # Port interne du service dans le cluster
+      targetPort: 5001           # Port ciblé sur les pods (containerPort)
+      nodePort: 30051            # Port exposé sur chaque nœud (30000-32767)
