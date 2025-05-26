@@ -28,10 +28,16 @@ spec:
             memory: "512Mi"
             cpu: "500m"
         env:
-          - name: MONGO_URI
-            value: "mongodb://louaymoncef:isetch@10.9.21.20:30017/userdb"
-          - name: SECRET_KEY
-            value: "devops2024!@#"
+        - name: MONGO_URI
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: MONGO_URI
+        - name: SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: app-secrets
+              key: SECRET_KEY
 ---
 apiVersion: v1
 kind: Service
@@ -47,3 +53,13 @@ spec:
       port: 80         # Port interne du cluster
       targetPort: 5000 # Port exposé par le container Flask
       nodePort: 30050  # Port externe exposé sur les nœuds (modifiable)
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: app-secrets
+  namespace: dev
+type: Opaque
+stringData:
+  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/product-db"
+  SECRET_KEY: "devops2024!@#"
