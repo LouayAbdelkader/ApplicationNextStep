@@ -52,12 +52,12 @@ class TestUserService(unittest.TestCase):
     def test_login_missing_username(self):
         response = self.app.post('/login', json={'password': 'testpass'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json['message'], 'Invalid credentials')
+        self.assertEqual(response.json['message'], 'Invalid request: missing username or password')
 
     def test_login_missing_password(self):
         response = self.app.post('/login', json={'username': 'testuser'})
         self.assertEqual(response.status_code, 400)
-        self.assertEqual(response.json['message'], 'Invalid credentials')
+        self.assertEqual(response.json['message'], 'Invalid request: missing username or password')
 
     def test_login_malformed_json(self):
         response = self.app.post('/login', data="invalid json", content_type='application/json')
