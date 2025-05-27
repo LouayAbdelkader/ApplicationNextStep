@@ -10,7 +10,7 @@ class TestUserService(unittest.TestCase):
 
     def test_register_success(self):
         r = self.app.post('/register', json={'username': 'testuser', 'password': 'testpass'})
-        self.assertEqual(r.status_code, 201)  # Correction ici
+        self.assertEqual(r.status_code, 201)
         self.assertEqual(r.json['message'], 'User registered successfully')
 
     def test_register_duplicate(self):
