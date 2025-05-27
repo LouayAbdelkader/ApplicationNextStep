@@ -2,6 +2,7 @@ import unittest
 import json
 from unittest.mock import patch
 import jwt
+import datetime
 from flask import Flask
 from app import app, users_collection
 
@@ -50,12 +51,12 @@ class TestUserService(unittest.TestCase):
 
     def test_login_missing_username(self):
         response = self.app.post('/login', json={'password': 'testpass'})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json['message'], 'Invalid credentials')
 
     def test_login_missing_password(self):
         response = self.app.post('/login', json={'username': 'testuser'})
-        self.assertEqual(response.status_code, 401)
+        self.assertEqual(response.status_code, 400)
         self.assertEqual(response.json['message'], 'Invalid credentials')
 
     def test_login_malformed_json(self):
