@@ -6,7 +6,7 @@ metadata:
   namespace: dev
 type: Opaque
 stringData:
-  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/users?authSource=admin""
+  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/users?authSource=admin"
   SECRET_KEY: "devops2024!@#"
 ---
 apiVersion: apps/v1
@@ -28,7 +28,7 @@ spec:
     spec:
       containers:
         - name: user-service
-          image: mohamedlouay/user-service-flask:latest  # Mets ici le nom de ton image Docker
+          image: mohamedlouay/user-service-flask:latest
           ports:
             - containerPort: 5000
           env:
@@ -63,6 +63,6 @@ spec:
     app: user-service
   ports:
     - protocol: TCP
-      port: 80         # Port accessible dans le cluster
-      targetPort: 5000 # Port de l'app Flask dans le conteneur
-      nodePort: 30050  # Port d'accès externe (http://<nodeIP>:30050)
+      port: 80
+      targetPort: 5000
+      nodePort: 30050
