@@ -64,6 +64,9 @@ def register():
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
+    if not data or 'username' not in data or 'password' not in data:
+        return jsonify({'message': 'Invalid request: missing username or password'}), 400
+
     username = data.get('username')
     password = data.get('password')
 
