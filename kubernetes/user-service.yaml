@@ -6,7 +6,7 @@ metadata:
   namespace: dev
 type: Opaque
 stringData:
-  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/users"
+  MONGO_URI: "mongodb://louaymoncef:isetch@10.9.21.20:30017/users?authSource=admin""
   SECRET_KEY: "devops2024!@#"
 ---
 apiVersion: apps/v1
