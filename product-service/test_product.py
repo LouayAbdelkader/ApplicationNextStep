@@ -15,9 +15,7 @@ class TestProductService(unittest.TestCase):
 
     def setUp(self):
         self.client = app.test_client()
-        # Vider la collection avant chaque test
         products_collection.delete_many({})
-        # Insérer les 3 produits comme dans seed_data()
         products_collection.insert_many([
             {'name': 'Product 1', 'price': 10, 'description': 'Un produit exceptionnel'},
             {'name': 'Product 2', 'price': 20, 'description': 'Un produit innovant'},
@@ -58,23 +56,28 @@ class TestProductService(unittest.TestCase):
         self.assertIn('products', data)
         self.assertIsInstance(data['products'], list)
         self.assertEqual(len(data['products']), 3)
-        # Vérifier la présence du premier produit
         first_product = data['products'][0]
         self.assertEqual(first_product['name'], 'Product 1')
         self.assertEqual(first_product['price'], 10)
         self.assertEqual(first_product['description'], 'Un produit exceptionnel')
 
     def test_seed_data_function(self):
-        # Vider la collection
         products_collection.delete_many({})
-        # Appeler la seed_data
         seed_data()
         count = products_collection.count_documents({})
         self.assertEqual(count, 3)
-        # Vérifier que le produit 2 est bien présent
         product2 = products_collection.find_one({'name': 'Product 2'})
         self.assertIsNotNone(product2)
         self.assertEqual(product2['price'], 20)
+
+    def test_get_products_empty_collection(self):
+        products_collection.delete_many({})
+        token = generate_token()
+        headers = {'Authorization': f'Bearer {token}'}
+        response = self.client.get('/products', headers=headers)
+        self.assertEqual(response.status_code, 200)
+        data = response.get_json()
+        self.assertEqual(len(data['products']), 0)
 
 if __name__ == '__main__':
     unittest.main()
