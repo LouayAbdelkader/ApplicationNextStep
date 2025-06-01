@@ -1,33 +1,44 @@
-# Étape 1 : Utiliser une image Python officielle légère
+# Utiliser une image légère et sécurisée
 FROM python:3.12-slim
 
-# Étape 2 : Créer un utilisateur non-root
-RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
+# Définir les variables d'environnement
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1
 
-# Étape 3 : Définir le répertoire de travail
+# Mettre à jour les paquets et installer les dépendances système nécessaires
+RUN apt-get update && apt-get upgrade -y && \
+    apt-get install -y --no-install-recommends \
+        gcc \
+        libffi-dev \
+        libssl-dev \
+        libpq-dev \
+        build-essential \
+        curl \
+        && rm -rf /var/lib/apt/lists/*
+
+# Créer un utilisateur non-root
+RUN useradd -m -s /bin/bash flaskuser
+
+# Définir le répertoire de travail
 WORKDIR /app
 
-# Étape 4 : Copier uniquement ce qui est nécessaire
+# Copier les fichiers de dépendances
 COPY requirements.txt .
 
-# Étape 5 : Installer les dépendances de manière sécurisée
+# Installer les dépendances Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Étape 6 : Copier le reste du code de l’application
+# Copier le code source de l'application
 COPY . .
 
-# Étape 7 : Changer le propriétaire des fichiers
-RUN chown -R appuser:appgroup /app
+# Donner les droits appropriés
+RUN chown -R flaskuser:flaskuser /app
 
-# Étape 8 : Droits d’exécution minimaux (non-root)
-USER appuser
+# Passer à l'utilisateur non-root
+USER flaskuser
 
-# Étape 9 : Variables d’environnement de base (sécurisé via docker-compose ou secrets en prod)
-ENV FLASK_ENV=production
-ENV PYTHONUNBUFFERED=1
-
-# Étape 10 : Exposer uniquement le port nécessaire
+# Exposer le port
 EXPOSE 5001
 
-# Étape 11 : Commande d'exécution (production avec Gunicorn pour + sécurité)
-CMD ["flask", "run", "--host=0.0.0.0", "--port=5001"]
+# Commande de lancement
+CMD ["python", "app.py"]
