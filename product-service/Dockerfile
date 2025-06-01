@@ -1,48 +1,33 @@
-# Étape 1 : Build - installation des dépendances
-FROM python:3.11-slim AS builder
+# Étape 1 : Utiliser une image Python officielle légère
+FROM python:3.12-slim
 
-# Variables d'environnement pour éviter les fichiers pyc et buffer flush
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Étape 2 : Créer un utilisateur non-root
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
-# Mise à jour des dépôts et installation minimale des dépendances système
-RUN apt-get update && apt-get upgrade -y && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    gcc \
-    && rm -rf /var/lib/apt/lists/*
-
-# Création d'un répertoire de travail
+# Étape 3 : Définir le répertoire de travail
 WORKDIR /app
 
-# Copier requirements.txt et installer les dépendances dans un dossier isolé
+# Étape 4 : Copier uniquement ce qui est nécessaire
 COPY requirements.txt .
 
-# Mettre à jour pip et installer setuptools avec une version récente, puis les dépendances
-RUN pip install --upgrade pip && \
-    pip install --prefix=/install setuptools==75.0.0 && \
-    pip install --prefix=/install -r requirements.txt
+# Étape 5 : Installer les dépendances de manière sécurisée
+RUN pip install --no-cache-dir -r requirements.txt
 
-# Étape 2 : Image finale allégée
-FROM python:3.11-slim
+# Étape 6 : Copier le reste du code de l’application
+COPY . .
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+# Étape 7 : Changer le propriétaire des fichiers
+RUN chown -R appuser:appgroup /app
 
-WORKDIR /app
-
-# Copier les dépendances installées depuis l'étape builder
-COPY --from=builder /install /usr/local
-
-# Copier le code de l'application
-COPY . /app
-
-# Port exposé
-EXPOSE 5001
-
-# Définir l'utilisateur non root pour plus de sécurité
-RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+# Étape 8 : Droits d’exécution minimaux (non-root)
 USER appuser
 
-# Commande par défaut pour lancer l'application
-CMD ["python", "app.py"]
+# Étape 9 : Variables d’environnement de base (sécurisé via docker-compose ou secrets en prod)
+ENV FLASK_ENV=production
+ENV PYTHONUNBUFFERED=1
+
+# Étape 10 : Exposer uniquement le port nécessaire
+EXPOSE 5001
+
+# Étape 11 : Commande d'exécution (production avec Gunicorn pour + sécurité)
+CMD ["flask", "run", "--host=0.0.0.0", "--port=5001"]
