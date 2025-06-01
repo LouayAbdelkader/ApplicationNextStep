@@ -24,7 +24,7 @@ COPY requirements.txt .
 
 # Mettre à jour pip et installer setuptools avec une version plus récente, puis les dépendances
 RUN pip install --upgrade pip && \
-    pip install --prefix=/install setuptools==72.0.0 && \
+    pip install --prefix=/install setuptools==75.0.0 && \
     pip install --prefix=/install -r requirements.txt
 
 # Étape 2 : Image finale allégée
