@@ -1,49 +1,45 @@
-# Étape 1 : Builder (pour les dépendances compilées)
+# Étape 1 : Build - installation des dépendances
 FROM python:3.11-slim AS builder
 
-# Éviter les fichiers pyc et forcer le flush stdout/stderr
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
+# Variables d'environnement pour éviter les fichiers pyc et buffer flush
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
-# Installer uniquement les outils nécessaires pour builder les dépendances
+# Installation des dépendances système requises pour pymongo et flask-pymongo
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
     gcc \
-    libffi-dev \
-    libssl-dev \
     && rm -rf /var/lib/apt/lists/*
 
+# Création d'un répertoire de travail
 WORKDIR /app
 
-# Installer les dépendances dans un dossier temporaire
+# Copier requirements.txt et installer les dépendances dans un dossier isolé
 COPY requirements.txt .
 
-RUN python -m venv /venv \
-    && /venv/bin/pip install --upgrade pip \
-    && /venv/bin/pip install -r requirements.txt
+RUN pip install --upgrade pip \
+    && pip install --prefix=/install -r requirements.txt
 
----
-
-# Étape 2 : Image finale minimaliste
+# Étape 2 : Image finale allégée
 FROM python:3.11-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    PATH="/venv/bin:$PATH"
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Copier l'environnement virtuel minimal (réduit la surface d'attaque)
-COPY --from=builder /venv /venv
+# Copier les dépendances installées depuis l'étape builder
+COPY --from=builder /install /usr/local
 
 # Copier le code de l'application
 COPY . /app
 
-# Créer un utilisateur non-root sécurisé
-RUN adduser --disabled-password --gecos '' appuser \
-    && chown -R appuser /app
-
-USER appuser
-
+# Port exposé
 EXPOSE 5001
 
+# Définir l'utilisateur non root pour plus de sécurité
+RUN adduser --disabled-password --gecos '' appuser && chown -R appuser /app
+USER appuser
+
+# Commande par défaut pour lancer l'application
 CMD ["python", "app.py"]
