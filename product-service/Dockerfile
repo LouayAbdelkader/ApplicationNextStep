@@ -1,4 +1,4 @@
-                                 # Étape 1 : Build - installation des dépendances
+# Étape 1 : Build - installation des dépendances
 FROM python:3.11-slim-bookworm AS builder
 
 # Variables d'environnement pour éviter les fichiers pyc et buffer flush
@@ -12,8 +12,6 @@ RUN apt-get update && apt-get upgrade -y && \
     gcc \
     libc6 \
     libc-bin \
-    libsystemd0 \
-    libudev1 \
     perl-base \
     zlib1g \
     && rm -rf /var/lib/apt/lists/*
@@ -26,7 +24,7 @@ COPY requirements.txt .
 
 # Mettre à jour pip et installer setuptools avec une version plus récente, puis les dépendances
 RUN pip install --upgrade pip && \
-    pip install --prefix=/install setuptools==70.0.0 && \
+    pip install --prefix=/install setuptools==72.0.0 && \
     pip install --prefix=/install -r requirements.txt
 
 # Étape 2 : Image finale allégée
