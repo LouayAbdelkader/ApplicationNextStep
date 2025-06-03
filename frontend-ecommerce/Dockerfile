@@ -2,36 +2,34 @@
 FROM node:20-bullseye AS builder
 WORKDIR /app
 
-# Copier les fichiers de dépendances
+# Copie des fichiers de dépendances
 COPY package.json package-lock.json ./
 
-# Supprimer node_modules au cas où
-RUN rm -rf node_modules
+# Nettoyage + installation complète
+RUN rm -rf node_modules && npm install
 
-# Forcer toutes les versions vers cross-spawn@7.0.6 (via override dans package.json déjà présent)
-RUN npm install
-
-# Vérification : s’assurer qu’il n’y a PAS de 7.0.3
+# Vérification : cross-spawn@7.0.6 uniquement
 RUN npm ls cross-spawn && \
-    ! npm ls cross-spawn | grep '7.0.3' || (echo "❌ ERREUR : cross-spawn@7.0.3 détecté !" && exit 1)
+    ! npm ls cross-spawn | grep '7.0.3' || (echo "❌ cross-spawn@7.0.3 détecté !" && exit 1)
 
-# Pré-télécharger le SWC si Next.js va en avoir besoin
-RUN npm install @next/swc-linux-x64-gnu --save-exact || true
+# ➕ Forcer l'installation des binaires natifs requis (sans modifier ton package.json)
+RUN npm install @next/swc-linux-x64-gnu@15.3.3 --save-exact && \
+    npm install lightningcss@1.25.0 --save-exact
 
-# Copier le reste du code
+# Copier le code source
 COPY . .
 
-# Désactiver la télémétrie de Next.js
+# Désactiver la télémétrie Next.js
 ENV NEXT_TELEMETRY_DISABLED 1
 
-# Lancer le build Next.js
+# Build Next.js
 RUN npm run build
 
 # ---- Production stage ----
 FROM node:20-bullseye AS runner
 WORKDIR /app
 
-# Installer les dépendances système nécessaires (sharp par exemple)
+# Installer libvips pour Sharp
 RUN apt-get update && apt-get install -y libvips-dev && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
@@ -40,14 +38,13 @@ ENV NODE_ENV=production
 RUN addgroup --gid 1001 nodejs && \
     adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# Copier uniquement les fichiers nécessaires
+# Copier uniquement le nécessaire
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Donner les droits à l'utilisateur non-root
+# Changer les permissions
 RUN chown -R nextjs:nodejs /app
-
 USER nextjs
 
 EXPOSE 3000
