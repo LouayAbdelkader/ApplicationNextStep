@@ -2,37 +2,43 @@
 FROM node:20-alpine AS builder
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci
+# 1. Copie des fichiers
+COPY package.json package-lock.json ./
 
-# Vérifier que cross-spawn@7.0.6 est bien installé
-RUN npm list cross-spawn | grep 'cross-spawn@7.0.6' || { echo "Erreur : cross-spawn@7.0.6 n'est pas installé. Version actuelle :" ; npm list cross-spawn; exit 1; }
+# 2. Empêche d’avoir des vieilles dépendances
+RUN rm -rf node_modules && npm install
 
+# 3. Vérification stricte que seule 7.0.6 est installée
+RUN npm ls cross-spawn && \
+    ! npm ls cross-spawn | grep '7.0.3' || (echo "❌ ERREUR : cross-spawn@7.0.3 détecté !" && exit 1)
+
+# 4. Copie du reste de l’app
 COPY . .
+
+# 5. Build du frontend
 RUN npm run build
 
 # ---- Production stage ----
 FROM node:20-alpine AS runner
 WORKDIR /app
 
-# Installer les dépendances système pour sharp
+# 6. Dépendance système pour Sharp
 RUN apk add --no-cache vips-dev
 
 ENV NODE_ENV=production
 
-# Créer un utilisateur non-root
+# 7. Utilisateur non-root
 RUN addgroup -g 1001 -S nodejs && \
     adduser -u 1001 -S nextjs -G nodejs
 
-# Copier les fichiers standalone + static
-COPY --from=builder /app/.next/standalone ./
+# 8. Copie des fichiers nécessaires uniquement
+COPY --from=builder /app/.next/standalone ./ 
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Ajuster les permissions pour l'utilisateur nextjs
+# 9. Permissions correctes
 RUN chown -R nextjs:nodejs /app
 
-# Utiliser un utilisateur non-root
 USER nextjs
 
 EXPOSE 3000
