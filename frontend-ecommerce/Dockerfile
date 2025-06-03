@@ -1,47 +1,56 @@
 # ---- Build stage ----
-FROM node:20-alpine AS builder
+FROM node:20-bullseye AS builder
 WORKDIR /app
 
-# 1. Copie des fichiers
+# Copier les fichiers de dépendances
 COPY package.json package-lock.json ./
 
-# 2. Empêche d’avoir des vieilles dépendances
-RUN rm -rf node_modules && npm install
+# Supprimer node_modules au cas où
+RUN rm -rf node_modules
 
-# 3. Vérification stricte que seule 7.0.6 est installée
+# Forcer toutes les versions vers cross-spawn@7.0.6 (via override dans package.json déjà présent)
+RUN npm install
+
+# Vérification : s’assurer qu’il n’y a PAS de 7.0.3
 RUN npm ls cross-spawn && \
     ! npm ls cross-spawn | grep '7.0.3' || (echo "❌ ERREUR : cross-spawn@7.0.3 détecté !" && exit 1)
 
-# 4. Copie du reste de l’app
+# Pré-télécharger le SWC si Next.js va en avoir besoin
+RUN npm install @next/swc-linux-x64-gnu --save-exact || true
+
+# Copier le reste du code
 COPY . .
 
-# 5. Build du frontend
+# Désactiver la télémétrie de Next.js
+ENV NEXT_TELEMETRY_DISABLED 1
+
+# Lancer le build Next.js
 RUN npm run build
 
 # ---- Production stage ----
-FROM node:20-alpine AS runner
+FROM node:20-bullseye AS runner
 WORKDIR /app
 
-# 6. Dépendance système pour Sharp
-RUN apk add --no-cache vips-dev
+# Installer les dépendances système nécessaires (sharp par exemple)
+RUN apt-get update && apt-get install -y libvips-dev && rm -rf /var/lib/apt/lists/*
 
 ENV NODE_ENV=production
 
-# 7. Utilisateur non-root
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -u 1001 -S nextjs -G nodejs
+# Créer un utilisateur non-root
+RUN addgroup --gid 1001 nodejs && \
+    adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# 8. Copie des fichiers nécessaires uniquement
-COPY --from=builder /app/.next/standalone ./ 
+# Copier uniquement les fichiers nécessaires
+COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# 9. Permissions correctes
+# Donner les droits à l'utilisateur non-root
 RUN chown -R nextjs:nodejs /app
 
 USER nextjs
 
 EXPOSE 3000
-ENV PORT 3000
+ENV PORT=3000
 
 CMD ["node", "server.js"]
