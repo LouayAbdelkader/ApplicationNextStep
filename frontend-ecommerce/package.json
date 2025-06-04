@@ -22,7 +22,7 @@
     "eslint-config-next": "15.3.2",
     "tailwindcss": "^4"
   },
-  "resolutions": {
-    "cross-spawn": "^7.0.6"
+  "overrides": {
+    "cross-spawn": "7.0.6"
   }
 }
