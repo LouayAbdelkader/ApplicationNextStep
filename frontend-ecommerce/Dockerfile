@@ -1,31 +1,28 @@
-# ---- Étape de Build ----
-FROM node:20-slim AS builder
+# ---- Build stage ----
+FROM node:20-bookworm-slim AS builder
 
-# Répertoire de travail
 WORKDIR /app
+
+# Copier package.json
+COPY package.json ./
+
+# Installer les dépendances avec versions récentes
+RUN npm install --no-audit
+
+# Copier le reste du projet
+COPY . .
 
 # Désactiver la télémétrie Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# 1. Copier uniquement package.json
-COPY package.json ./
-
-# 2. Installer toutes les dépendances
-RUN npm install --no-audit
-
-# 3. Copier le reste du projet
-COPY . .
-
-# 4. Construire l'application Next.js
+# Build Next.js
 RUN npm run build
 
-# ---- Étape de Production ----
-FROM node:20-slim AS runner
+# ---- Production stage ----
+FROM node:20-bookworm-slim AS runner
 
-# Répertoire de travail
 WORKDIR /app
 
-# Variables d’environnement
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
@@ -34,16 +31,19 @@ ENV PORT=3000
 RUN addgroup --gid 1001 nodejs && \
     adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# Copier uniquement ce qui est nécessaire à l'exécution
+# 🔥 Nettoyage des paquets à vulnérabilités connues
+RUN apt-get update && \
+    apt-get purge -y perl-base zlib1g && \
+    apt-get autoremove -y && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
+
+# Copier uniquement les fichiers nécessaires à l’exécution
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Sécuriser les permissions
 USER nextjs
 
-# Exposer le port
 EXPOSE 3000
-
-# Commande de démarrage
 CMD ["node", "server.js"]
