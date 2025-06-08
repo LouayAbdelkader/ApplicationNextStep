@@ -3,7 +3,7 @@ FROM node:20-bookworm-slim AS builder
 
 WORKDIR /app
 
-COPY package.json ./
+COPY package.json package-lock.json ./
 RUN npm install --no-audit
 
 COPY . .
@@ -24,8 +24,9 @@ ENV PORT=3000
 RUN addgroup --gid 1001 nodejs && \
     adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# Nettoyage raisonnable
+# Mettre à jour les paquets pour corriger les vulnérabilités
 RUN apt-get update && \
+    apt-get upgrade -y && \
     apt-get remove -y man-db && \
     apt-get autoremove -y && \
     apt-get clean && \
