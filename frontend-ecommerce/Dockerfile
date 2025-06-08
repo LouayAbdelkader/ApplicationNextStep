@@ -1,5 +1,5 @@
 # ---- Build stage ----
-FROM node:20-bookworm-slim AS builder
+FROM node:20-bookworm AS builder
 
 WORKDIR /app
 
@@ -12,7 +12,7 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # ---- Runtime stage ----
-FROM node:20-bookworm-slim AS runner
+FROM node:20-bookworm AS runner
 
 WORKDIR /app
 
@@ -24,8 +24,9 @@ ENV PORT=3000
 RUN addgroup --gid 1001 nodejs && \
     adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# Mettre à jour les paquets pour corriger les vulnérabilités
-RUN apt-get update && \
+# Ajouter le dépôt de sécurité Debian et mettre à jour les paquets
+RUN echo "deb http://deb.debian.org/debian-security bookworm-security main" > /etc/apt/sources.list.d/bookworm-security.list && \
+    apt-get update && \
     apt-get upgrade -y && \
     apt-get remove -y man-db && \
     apt-get autoremove -y && \
