@@ -6,8 +6,8 @@ WORKDIR /app
 # Copier les fichiers de dépendances
 COPY package.json package-lock.json ./
 
-# Installer les dépendances avec des flags de sécurité
-RUN npm ci --only=production --no-audit --no-fund --ignore-scripts
+# Installer toutes les dépendances (dev incluses pour le build)
+RUN npm ci --no-audit --no-fund --ignore-scripts
 
 # Copier le code source
 COPY . .
@@ -39,14 +39,20 @@ ENV PORT=3000
 RUN addgroup -g 1001 -S nodejs && \
     adduser -S nextjs -u 1001 -G nodejs
 
-# Copier uniquement les fichiers nécessaires depuis le build stage
+# Copier uniquement les fichiers de production nécessaires
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
+# Installer uniquement les dépendances de production dans le runtime
+COPY --from=builder /app/package*.json ./
+RUN npm ci --only=production --no-audit --no-fund --ignore-scripts && \
+    npm cache clean --force
+
 # Définir les permissions strictes
 RUN chmod -R 755 /app && \
-    chown -R nextjs:nodejs /app
+    chown -R nextjs:nodejs /app && \
+    rm -rf package*.json node_modules/.cache
 
 # Basculer vers l'utilisateur non-root
 USER nextjs
