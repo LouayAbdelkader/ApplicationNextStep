@@ -1,57 +1,44 @@
-# ---- Build stage ----
-FROM node:20-bookworm-slim AS builder
+# ---- Build Stage ----
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# 1. Copier uniquement les fichiers nécessaires pour installer les dépendances
-COPY package.json package-lock.json ./
+# 1. Copier uniquement package.json
+COPY package.json ./
 
-# 2. Installer les dépendances nécessaires
-RUN npm install
+# 2. Installer les dépendances sans lockfile (⚠️ plus de variabilité)
+RUN npm install --no-audit --omit=dev
 
-# 3. Ajouter les dépendances critiques manquantes (si pas dans package.json)
-RUN npm install -D \
-    @tailwindcss/postcss \
-    @next/swc-linux-x64-gnu@15.3.3 \
-    lightningcss@1.25.0 \
-    @tailwindcss/oxide@4.0.0
-
-# 4. Copier le reste du projet
+# 3. Copier le reste du code
 COPY . .
 
-# 5. Désactiver la télémétrie
+# 4. Désactiver la télémétrie Next.js
 ENV NEXT_TELEMETRY_DISABLED=1
 
-# 6. Build Next.js
+# 5. Compiler l'application (Next.js)
 RUN npm run build
 
-# ---- Production stage ----
-FROM node:20-bookworm-slim AS runner
+# ---- Production Stage ----
+FROM node:20-alpine AS runner
 
 WORKDIR /app
 
-# 7. Installer la lib native pour image optimization
-RUN apt-get update && apt-get install -y libvips-dev && rm -rf /var/lib/apt/lists/*
-
-# 8. Configuration environnement production
+# Environnement
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 
-# 9. Créer un utilisateur non-root sécurisé
-RUN addgroup --gid 1001 nodejs && \
-    adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
+# Créer un utilisateur non-root
+RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -s /bin/sh -D nextjs
 
-# 10. Copier uniquement les fichiers nécessaires à l'exécution
+# Copier les fichiers nécessaires à l'exécution
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# 11. Sécuriser les permissions
-RUN chown -R nextjs:nodejs /app
+# Sécuriser les droits
 USER nextjs
 
 EXPOSE 3000
 
-# 12. Lancer l'application
 CMD ["node", "server.js"]
