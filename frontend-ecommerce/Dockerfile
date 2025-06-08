@@ -1,44 +1,49 @@
-# ---- Build Stage ----
-FROM node:20-alpine AS builder
+# ---- Étape de Build ----
+FROM node:20-slim AS builder
 
+# Répertoire de travail
 WORKDIR /app
+
+# Désactiver la télémétrie Next.js
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # 1. Copier uniquement package.json
 COPY package.json ./
 
-# 2. Installer les dépendances sans lockfile (⚠️ plus de variabilité)
-RUN npm install --no-audit --omit=dev
+# 2. Installer toutes les dépendances
+RUN npm install --no-audit
 
-# 3. Copier le reste du code
+# 3. Copier le reste du projet
 COPY . .
 
-# 4. Désactiver la télémétrie Next.js
-ENV NEXT_TELEMETRY_DISABLED=1
-
-# 5. Compiler l'application (Next.js)
+# 4. Construire l'application Next.js
 RUN npm run build
 
-# ---- Production Stage ----
-FROM node:20-alpine AS runner
+# ---- Étape de Production ----
+FROM node:20-slim AS runner
 
+# Répertoire de travail
 WORKDIR /app
 
-# Environnement
+# Variables d’environnement
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV PORT=3000
 
 # Créer un utilisateur non-root
-RUN addgroup -g 1001 nodejs && adduser -u 1001 -G nodejs -s /bin/sh -D nextjs
+RUN addgroup --gid 1001 nodejs && \
+    adduser --uid 1001 --disabled-password --gecos '' --ingroup nodejs nextjs
 
-# Copier les fichiers nécessaires à l'exécution
+# Copier uniquement ce qui est nécessaire à l'exécution
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/public ./public
 
-# Sécuriser les droits
+# Sécuriser les permissions
 USER nextjs
 
+# Exposer le port
 EXPOSE 3000
 
+# Commande de démarrage
 CMD ["node", "server.js"]
