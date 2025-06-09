@@ -1,22 +1,23 @@
-/* Applique à toutes les pages */
-body, html {
+/* Appliquer à toutes les pages */
+html, body {
   margin: 0;
   padding: 0;
   height: 100%;
-  font-family: Arial, sans-serif;
   background-color: #1f1830;
   color: #ededed;
+  font-family: Arial, sans-serif;
 }
 
-/* Centrage vertical et horizontal */
+/* Centrage vertical + horizontal */
 .center-container {
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
+  height: 100vh; /* Hauteur écran complète */
+  width: 100vw;
 }
 
-/* Carte de formulaire */
+/* Formulaire centré */
 .card {
   width: 100%;
   max-width: 400px;
@@ -24,7 +25,7 @@ body, html {
   background-color: #1f1830;
   border: 1px solid #3d2d54;
   border-radius: 1rem;
-  box-shadow: 0 0 10px rgba(0,0,0,0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
 }
 
 /* Champs */
@@ -38,10 +39,11 @@ body, html {
   color: #ededed;
 }
 
-/* Bouton */
+/* Bouton principal */
 .card button {
   width: 100%;
   padding: 0.75rem;
+  margin-bottom: 1rem;
   background-color: #ffffff;
   color: #000000;
   font-weight: bold;
@@ -50,9 +52,10 @@ body, html {
   cursor: pointer;
 }
 
+/* Lien secondaire */
 .card .link {
+  display: block;
   text-align: center;
-  margin-top: 1.5rem;
   font-size: 0.9rem;
   color: #90cdf4;
   text-decoration: underline;
