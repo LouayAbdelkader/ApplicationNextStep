@@ -1,6 +1,11 @@
 # Dockerfile simple et sécurisé
 FROM node:20-alpine AS builder
 
+# Fix du cross-spawn vulnérable dans npm global
+RUN npm install -g cross-spawn@7.0.6 && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/cross-spawn && \
+    ln -s /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/cross-spawn
+
 WORKDIR /app
 
 # Copie package.json avec override cross-spawn 7.0.6
@@ -16,6 +21,11 @@ RUN npm run build
 
 # Runner
 FROM node:20-alpine AS runner
+
+# Fix du cross-spawn vulnérable dans npm global
+RUN npm install -g cross-spawn@7.0.6 && \
+    rm -rf /usr/local/lib/node_modules/npm/node_modules/cross-spawn && \
+    ln -s /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/cross-spawn
 
 RUN apk add --no-cache dumb-init
 
