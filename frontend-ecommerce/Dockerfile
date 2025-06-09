@@ -7,7 +7,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 
 # Installer toutes les dépendances (dev incluses pour le build)
-RUN npm ci --no-audit --no-fund --ignore-scripts
+RUN npm ci --no-audit --no-fund --ignore-scripts && \
+    npm update cross-spawn@^7.0.6 --no-audit
 
 # Copier le code source
 COPY . .
