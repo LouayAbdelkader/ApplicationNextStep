@@ -1,131 +1,166 @@
 'use client';
-import { useState } from 'react';
-import { login, getProfile } from '../../services/api';
+import { useEffect, useState } from 'react';
+import { getProducts, logout } from '../services/api';
 import { useRouter } from 'next/navigation';
 
-export default function LoginPage() {
-  const [formData, setFormData] = useState({ username: '', password: '' });
+export default function HomePage() {
+  const [username, setUsername] = useState('');
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
 
   const styles = {
     page: {
+      minHeight: '100vh',
       backgroundColor: '#1f1830',
       color: '#ededed',
-      minHeight: '100vh',
-      display: 'flex',
-      justifyContent: 'center',
-      alignItems: 'center',
       fontFamily: 'Arial, sans-serif',
     },
-    card: {
-      width: '100%',
-      maxWidth: '400px',
-      padding: '2rem',
-      backgroundColor: '#1f1830',
-      border: '1px solid #3d2d54',
-      borderRadius: '1rem',
-      boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+    nav: {
+      display: 'flex',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      padding: '1rem',
+      borderBottom: '1px solid #333',
+      boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+    },
+    logoBox: {
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
     },
     logo: {
-      height: '64px',
-      marginBottom: '1.5rem',
-      display: 'block',
-      marginLeft: 'auto',
-      marginRight: 'auto',
-    },
-    title: {
-      textAlign: 'center',
-      fontSize: '1.5rem',
+      width: '32px',
+      height: '32px',
+      backgroundColor: '#3182ce',
+      borderRadius: '5px',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      color: '#fff',
       fontWeight: 'bold',
-      marginBottom: '1.5rem',
+      fontSize: '1rem',
     },
-    input: {
-      width: '100%',
-      padding: '0.75rem',
-      marginBottom: '1rem',
-      border: '1px solid #3d2d54',
-      borderRadius: '0.5rem',
-      backgroundColor: 'transparent',
-      color: '#ededed',
-    },
-    button: {
-      width: '100%',
-      padding: '0.75rem',
-      backgroundColor: '#ffffff',
-      color: '#000000',
-      fontWeight: 'bold',
+    logout: {
+      backgroundColor: '#f0f0f0',
+      color: '#1a202c',
+      padding: '0.5rem 1rem',
       borderRadius: '0.5rem',
       border: 'none',
       cursor: 'pointer',
     },
-    link: {
+    main: {
+      padding: '2rem',
+      maxWidth: '1200px',
+      margin: '0 auto',
+    },
+    heading: {
       textAlign: 'center',
-      marginTop: '1.5rem',
-      fontSize: '0.9rem',
-      color: '#90cdf4',
-      textDecoration: 'underline',
-      background: 'none',
-      border: 'none',
-      cursor: 'pointer',
+      fontSize: '2rem',
+      marginBottom: '2rem',
+    },
+    grid: {
+      display: 'grid',
+      gap: '1.5rem',
+      gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+    },
+    card: {
+      backgroundColor: '#1e1e1e',
+      border: '1px solid #444',
+      borderRadius: '1rem',
+      padding: '1.5rem',
+      boxShadow: '0 0 10px rgba(0,0,0,0.3)',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+    },
+    footer: {
+      textAlign: 'center',
+      padding: '2rem',
+      borderTop: '1px solid #333',
+      color: '#aaa',
+      marginTop: '4rem',
     },
   };
 
-  const handleChange = (e) =>
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  useEffect(() => {
+    const stored = localStorage.getItem('username');
+    const token = localStorage.getItem('token');
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await login(formData);
-      if (res.status === 200) {
-        const profile = await getProfile();
-        localStorage.setItem('username', profile.data.username);
-        alert(`Bienvenue ${profile.data.username} !`);
-        router.push('/');
-      }
-    } catch (err) {
-      alert('Erreur lors de la connexion');
-      console.error(err);
+    if (!token) {
+      logout();
+      router.push('/login');
+      return;
     }
+
+    if (stored) setUsername(stored);
+
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts();
+        setProducts(res.data.products || []);
+      } catch (err) {
+        setError("Erreur lors du chargement des produits.");
+        if (err.response?.status === 401 || err.response?.status === 403) {
+          handleLogout();
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProducts();
+  }, [router]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
   };
 
   return (
-    <main style={styles.page}>
-      <div style={styles.card}>
-        <img src="/LogoNextStepIT.png" alt="Logo" style={styles.logo} />
-        <h1 style={styles.title}>Se connecter</h1>
-        <form onSubmit={handleSubmit}>
-          <input
-            type="text"
-            name="username"
-            placeholder="Nom d'utilisateur"
-            value={formData.username}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <input
-            type="password"
-            name="password"
-            placeholder="Mot de passe"
-            value={formData.password}
-            onChange={handleChange}
-            style={styles.input}
-            required
-          />
-          <button type="submit" style={styles.button}>
-            Se connecter
-          </button>
-        </form>
-        <div style={{ textAlign: 'center' }}>
-          <button
-            style={styles.link}
-            onClick={() => router.push('/signup')}
-          >
-            Pas encore de compte ? Inscrivez-vous ici
-          </button>
+    <div style={styles.page}>
+      <nav style={styles.nav}>
+        <div style={styles.logoBox}>
+          <div style={styles.logo}>NS</div>
+          <span style={{ fontWeight: 'bold', fontSize: '1.2rem' }}>NextStep Store</span>
         </div>
-      </div>
-    </main>
+        {username && (
+          <div>
+            <span style={{ marginRight: '1rem' }}>👋 {username}</span>
+            <button onClick={handleLogout} style={styles.logout}>
+              Se déconnecter
+            </button>
+          </div>
+        )}
+      </nav>
+
+      <main style={styles.main}>
+        <h2 style={styles.heading}>Catalogue Produits</h2>
+
+        {loading && <p style={{ textAlign: 'center' }}>Chargement...</p>}
+        {error && <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>}
+
+        {!loading && !error && (
+          <div style={styles.grid}>
+            {products.map((product) => (
+              <div key={product._id} style={styles.card}>
+                <div>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>{product.name}</h3>
+                  <p style={{ color: '#aaa' }}>{product.description}</p>
+                </div>
+                <p style={{ marginTop: '1rem', fontWeight: 'bold', color: '#63b3ed' }}>
+                  {product.price} €
+                </p>
+              </div>
+            ))}
+          </div>
+        )}
+      </main>
+
+      <footer style={styles.footer}>
+        &copy; 2024 NextStepIT Store. Tous droits réservés.
+      </footer>
+    </div>
   );
 }
