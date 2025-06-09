@@ -18,9 +18,8 @@ export default function LoginPage() {
       const res = await login(formData);
       if (res.status === 200) {
         const profile = await getProfile();
-        const username = profile.data.username;
-        localStorage.setItem('username', username);
-        alert(`Bienvenue ${username} !`);
+        localStorage.setItem('username', profile.data.username);
+        alert(`Bienvenue ${profile.data.username} !`);
         router.push('/');
       }
     } catch (err) {
@@ -30,20 +29,21 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[var(--color-background)] text-[var(--color-foreground)] font-sans">
-      <div className="w-full max-w-md p-8 bg-[var(--color-background)] border border-[var(--color-foreground)]/20 rounded-xl shadow-xl">
-        <div className="flex flex-col items-center">
-          <img src="/LogoNextStepIT.png" alt="Logo" className="h-16 mb-6" />
-          <h1 className="text-2xl font-bold mb-6 text-center">Se connecter</h1>
+    <main className="min-h-screen flex items-center justify-center bg-[var(--background)] text-[var(--foreground)]">
+      <div className="w-full max-w-md p-8 bg-[var(--background)] border border-[var(--border)] rounded-2xl shadow-md">
+        <div className="flex flex-col items-center mb-6">
+          <img src="/LogoNextStepIT.png" alt="Logo" className="h-16 mb-4" />
+          <h1 className="text-2xl font-bold text-center">Se connecter</h1>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <input
             type="text"
             name="username"
             placeholder="Nom d'utilisateur"
             value={formData.username}
             onChange={handleChange}
-            className="w-full p-3 bg-transparent border border-[var(--color-foreground)]/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 rounded border border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
           <input
@@ -52,21 +52,22 @@ export default function LoginPage() {
             placeholder="Mot de passe"
             value={formData.password}
             onChange={handleChange}
-            className="w-full p-3 bg-transparent border border-[var(--color-foreground)]/30 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 rounded border border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
             required
           />
           <button
             type="submit"
-            className="w-full py-3 bg-[var(--color-foreground)] text-[var(--color-background)] rounded-md hover:bg-opacity-80 transition"
+            className="w-full py-3 bg-white text-black font-semibold rounded hover:bg-gray-200 transition"
           >
             Se connecter
           </button>
         </form>
-        <p className="text-center mt-6">
+
+        <p className="text-center mt-6 text-sm">
           Pas encore de compte ?{' '}
           <button
-            className="text-blue-400 underline hover:text-blue-300"
             onClick={() => router.push('/signup')}
+            className="text-blue-400 underline hover:text-blue-300"
           >
             Inscrivez-vous ici
           </button>
