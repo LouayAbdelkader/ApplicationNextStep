@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { signup } from '../../services/api';
 import { useRouter } from 'next/navigation';
-import '../../styles/common.css'; // ✅ Import du fichier CSS partagé
+import '../style.css'; // ✅ Import du fichier CSS partagé
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({ username: '', password: '' });
