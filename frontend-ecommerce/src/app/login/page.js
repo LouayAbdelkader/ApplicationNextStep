@@ -28,7 +28,7 @@ export default function LoginPage() {
   };
 
   return (
-    <main className="page">
+    <main className="center-container">
       <div className="card">
         <img src="/LogoNextStepIT.png" alt="Logo" className="logo" />
         <h1 className="title">Se connecter</h1>
