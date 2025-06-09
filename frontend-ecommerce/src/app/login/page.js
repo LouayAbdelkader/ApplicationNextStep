@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import { login, getProfile } from '../../services/api';
 import { useRouter } from 'next/navigation';
@@ -8,9 +7,71 @@ export default function LoginPage() {
   const [formData, setFormData] = useState({ username: '', password: '' });
   const router = useRouter();
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const styles = {
+    page: {
+      backgroundColor: '#1f1830',
+      color: '#ededed',
+      minHeight: '100vh',
+      display: 'flex',
+      justifyContent: 'center',
+      alignItems: 'center',
+      fontFamily: 'Arial, sans-serif',
+    },
+    card: {
+      width: '100%',
+      maxWidth: '400px',
+      padding: '2rem',
+      backgroundColor: '#1f1830',
+      border: '1px solid #3d2d54',
+      borderRadius: '1rem',
+      boxShadow: '0 0 10px rgba(0,0,0,0.2)',
+    },
+    logo: {
+      height: '64px',
+      marginBottom: '1.5rem',
+      display: 'block',
+      marginLeft: 'auto',
+      marginRight: 'auto',
+    },
+    title: {
+      textAlign: 'center',
+      fontSize: '1.5rem',
+      fontWeight: 'bold',
+      marginBottom: '1.5rem',
+    },
+    input: {
+      width: '100%',
+      padding: '0.75rem',
+      marginBottom: '1rem',
+      border: '1px solid #3d2d54',
+      borderRadius: '0.5rem',
+      backgroundColor: 'transparent',
+      color: '#ededed',
+    },
+    button: {
+      width: '100%',
+      padding: '0.75rem',
+      backgroundColor: '#ffffff',
+      color: '#000000',
+      fontWeight: 'bold',
+      borderRadius: '0.5rem',
+      border: 'none',
+      cursor: 'pointer',
+    },
+    link: {
+      textAlign: 'center',
+      marginTop: '1.5rem',
+      fontSize: '0.9rem',
+      color: '#90cdf4',
+      textDecoration: 'underline',
+      background: 'none',
+      border: 'none',
+      cursor: 'pointer',
+    },
   };
+
+  const handleChange = (e) =>
+    setFormData({ ...formData, [e.target.name]: e.target.value });
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -23,27 +84,24 @@ export default function LoginPage() {
         router.push('/');
       }
     } catch (err) {
-      alert("Erreur lors de la connexion");
+      alert('Erreur lors de la connexion');
       console.error(err);
     }
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[var(--background)] text-[var(--foreground)]">
-      <div className="w-full max-w-md p-8 bg-[var(--background)] border border-[var(--border)] rounded-2xl shadow-md">
-        <div className="flex flex-col items-center mb-6">
-          <img src="/LogoNextStepIT.png" alt="Logo" className="h-16 mb-4" />
-          <h1 className="text-2xl font-bold text-center">Se connecter</h1>
-        </div>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <main style={styles.page}>
+      <div style={styles.card}>
+        <img src="/LogoNextStepIT.png" alt="Logo" style={styles.logo} />
+        <h1 style={styles.title}>Se connecter</h1>
+        <form onSubmit={handleSubmit}>
           <input
             type="text"
             name="username"
             placeholder="Nom d'utilisateur"
             value={formData.username}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded border border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            style={styles.input}
             required
           />
           <input
@@ -52,26 +110,21 @@ export default function LoginPage() {
             placeholder="Mot de passe"
             value={formData.password}
             onChange={handleChange}
-            className="w-full px-4 py-3 rounded border border-[var(--border)] bg-transparent text-[var(--foreground)] placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            style={styles.input}
             required
           />
-          <button
-            type="submit"
-            className="w-full py-3 bg-white text-black font-semibold rounded hover:bg-gray-200 transition"
-          >
+          <button type="submit" style={styles.button}>
             Se connecter
           </button>
         </form>
-
-        <p className="text-center mt-6 text-sm">
-          Pas encore de compte ?{' '}
+        <div style={{ textAlign: 'center' }}>
           <button
+            style={styles.link}
             onClick={() => router.push('/signup')}
-            className="text-blue-400 underline hover:text-blue-300"
           >
-            Inscrivez-vous ici
+            Pas encore de compte ? Inscrivez-vous ici
           </button>
-        </p>
+        </div>
       </div>
     </main>
   );
