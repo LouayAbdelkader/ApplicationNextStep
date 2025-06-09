@@ -9,7 +9,7 @@ html, body {
 }
 
 /* Conteneur centré horizontalement et verticalement */
-.page {
+.center-container {
   display: flex;
   justify-content: center;
   align-items: center;
