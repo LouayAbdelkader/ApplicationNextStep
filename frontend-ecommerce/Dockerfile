@@ -4,7 +4,9 @@ FROM node:20-alpine AS builder
 # Fix du cross-spawn vulnérable dans npm global
 RUN npm install -g cross-spawn@7.0.6 && \
     rm -rf /usr/local/lib/node_modules/npm/node_modules/cross-spawn && \
-    ln -s /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/cross-spawn
+    cp -r /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/ && \
+    sed -i 's/"7\.0\.3"/"7.0.6"/g' /usr/local/lib/node_modules/npm/node_modules/cross-spawn/package.json && \
+    sed -i 's/"7\.0\.3"/"7.0.6"/g' /usr/local/lib/node_modules/npm/node_modules/cross-spawn/package.json
 
 WORKDIR /app
 
@@ -25,7 +27,7 @@ FROM node:20-alpine AS runner
 # Fix du cross-spawn vulnérable dans npm global
 RUN npm install -g cross-spawn@7.0.6 && \
     rm -rf /usr/local/lib/node_modules/npm/node_modules/cross-spawn && \
-    ln -s /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/cross-spawn
+    cp -r /usr/local/lib/node_modules/cross-spawn /usr/local/lib/node_modules/npm/node_modules/
 
 RUN apk add --no-cache dumb-init
 
