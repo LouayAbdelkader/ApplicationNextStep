@@ -34,7 +34,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-background text-foreground font-sans">
       <div className="w-full max-w-md p-8 bg-background border border-foreground/20 rounded-xl shadow-lg flex flex-col items-center">
         <img src="/LogoNextStepIT.png" alt="Logo de l'entreprise" className="h-16 mb-6" />
-        <h1 className="text-2xl font-bold mb-6 text-center">Se connecter (Test de vérification)</h1>
+        <h1 className="text-2xl font-bold mb-6 text-center">Se connecter Test </h1>
         <form onSubmit={handleSubmit} className="w-full space-y-4">
           <input
             type="text"
