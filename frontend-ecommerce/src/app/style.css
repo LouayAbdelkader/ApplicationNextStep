@@ -1,59 +1,45 @@
-/* Couleurs principales */
-:root {
-  --bg-dark: #1f1830;
-  --text-light: #ededed;
-  --border-color: #3d2d54;
-  --highlight: #90cdf4;
-  --card-bg: #1e1e1e;
-}
-
-/* Page entière */
-.page {
-  background-color: var(--bg-dark);
-  color: var(--text-light);
-  min-height: 100vh;
+/* Applique à toutes les pages */
+body, html {
+  margin: 0;
+  padding: 0;
+  height: 100%;
   font-family: Arial, sans-serif;
+  background-color: #1f1830;
+  color: #ededed;
 }
 
-/* Carte centrale */
+/* Centrage vertical et horizontal */
+.center-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+
+/* Carte de formulaire */
 .card {
+  width: 100%;
   max-width: 400px;
   padding: 2rem;
-  background-color: var(--bg-dark);
-  border: 1px solid var(--border-color);
+  background-color: #1f1830;
+  border: 1px solid #3d2d54;
   border-radius: 1rem;
   box-shadow: 0 0 10px rgba(0,0,0,0.2);
-  margin: auto;
-}
-
-/* Logo */
-.logo {
-  height: 64px;
-  margin: 0 auto 1.5rem auto;
-  display: block;
-}
-
-/* Titre */
-.title {
-  text-align: center;
-  font-size: 1.5rem;
-  font-weight: bold;
-  margin-bottom: 1.5rem;
 }
 
 /* Champs */
-.input {
+.card input {
   width: 100%;
   padding: 0.75rem;
   margin-bottom: 1rem;
-  border: 1px solid var(--border-color);
+  border: 1px solid #3d2d54;
   border-radius: 0.5rem;
   background-color: transparent;
-  color: var(--text-light);
+  color: #ededed;
 }
 
-/* Bouton principal */
-.button {
+/* Bouton */
+.card button {
   width: 100%;
   padding: 0.75rem;
   background-color: #ffffff;
@@ -64,12 +50,11 @@
   cursor: pointer;
 }
 
-/* Lien */
-.link-button {
+.card .link {
   text-align: center;
   margin-top: 1.5rem;
   font-size: 0.9rem;
-  color: var(--highlight);
+  color: #90cdf4;
   text-decoration: underline;
   background: none;
   border: none;
