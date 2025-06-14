@@ -31,7 +31,7 @@ export default function LoginPage() {
     <main className="center-container">
       <div className="card">
         <img src="/LogoNextStepIT.png" alt="Logo" className="logo" />
-        <h1 className="title">Se connecter Test de Modification vers end users !</h1>
+        <h1 className="title">Se connecter</h1>
         <form onSubmit={handleSubmit}>
           <input
             type="text"
